@@ -71,7 +71,12 @@ parsed_args = argparse(args)
 if len(args) == 0 or args[0] in ["?", "help"]:
     return HELP_TEXT
 
-out = [f'-title "{name} does part-time work!"']
+out = [
+    f'-title "{name} does part-time work!"',
+    f'-thumb {image}'
+    f'-color {color}'
+]
+
 desc_builder = []
 errors = []
 job_modifications = []
@@ -89,14 +94,14 @@ else:
 # Lifestyle
 # TODO: Fetch lifestyle from cvar
 if args[0]:
-    out.append(f'-f "Lifestyle|{args[0]}"')
+    desc_builder.append(f'**Lifestyle:** {args[0].title()}')
 else:
-    errors.append(f'-f "Err: No Lifestyle Provided|The first argument to this \
+    errors.append(f'-f "Error: No Lifestyle Provided|The first argument to this \
                     command needs to be your lifestyle.\n\
                     Example: `!{ALIAS_NAME} modest`"')
 
 if get_cc(CC_DTDS) == 0:
-    errors.append(f'-f "Err: No DTDs|You have no downtime days left!"')
+    errors.append(f'-f "Error: No DTDs|You have no downtime days left!"')
 
 # Determine and report employer
 new_employer = parsed_args.last(ARG_EMPLOYER)
@@ -107,9 +112,9 @@ if new_employer:
 
 employer = job_details.get(FIELD_EMPLOYER)
 if employer:
-    out.append(f'-f "Employer|{employer}"')
+    desc_builder.append(f'**Employer:** {employer.title()}')
 else:
-    errors.append(f'-f "Err: No Employer|You must set your employer using \
+    errors.append(f'-f "Error: No Employer|You must set your employer using \
                     `-{ARG_EMPLOYER}`.\n\
                     Example: `!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\"`"')
 
@@ -121,8 +126,8 @@ if last_attended_sec:
     days_elapsed = delta_sec // (24 * 60 * 60)
     hours = delta_sec % (24 * 60 * 60) // 3600
 
-    out.append(f'-f "Last Attended|{hours} hour(s) \
-                and {days_elapsed} day(s) ago."')
+    desc_builder.append(f'**Last Attended:** {days_elapsed} day(s) \
+                and {hours} hour(s) ago.')
 
     pay_cuts = days_elapsed // DAYS_PER_PAY_CUT
 
@@ -130,7 +135,7 @@ if last_attended_sec:
         previous_wage = job_details[FIELD_WAGE]
         job_details[FIELD_WAGE] -= pay_cuts
 
-        out.append(f'-f "Nonattendance|Because of nonattendance, \
+        desc_builder.append(f'Because of nonattendance, \
                             your wages have dropped from \
                             {previous_wage} to {job_details[FIELD_WAGE]}."')
 else:
@@ -150,7 +155,7 @@ if new_check:
         job_details[FIELD_CHECK] = check
         job_modifications.append(f'Skill check set to {new_check}')
     else:
-        errors.append(f'-f "Err: Invalid Check|`{new_check}` is not a \
+        errors.append(f'-f "Error: Invalid Check|`{new_check}` is not a \
                         valid value for `-{ARG_CHECK}`.\n\
                         Try again with the name of a skill or ability.\n\n\
                         Examples:\n\
@@ -177,7 +182,7 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
     # adv_dice can technically be 2 if ea is passed, but...
     # Uhh. People shouldn't be doing that?
     adv_dice = parsed_args.adv()
-    desc_builder.append(f'**Base Wage:** {job_details[FIELD_WAGE]}')
+    desc_builder.append(f'**Base Wage:** {job_details[FIELD_WAGE]}GP')
     desc_builder.append(f'**Checking:** {check_name}{" + " + str(job_details[FIELD_BONUS]) if job_details[FIELD_BONUS] else ""}{" with advantage" if adv_dice > 0 else ""}')
 
     check_bonus = get_raw().skills.get(check_name)
@@ -224,11 +229,12 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
 
     desc_builder.append("")
     desc_builder.append(f'You earned a total of **{earnings}GP!**')
-    desc_builder.append(f'**Remaining DTDs this week:** {get_cc(CC_DTDS)}')
+    out.append(f'-f "Downtime Days (-1)|{get_cc(CC_DTDS)}"')
+
     # TODO: Automated Payment
 
 elif not check_name:
-    errors.append(f'-f "Err: No Check|You must set your skill check using \
+    errors.append(f'-f "Error: No Check|You must set your skill check using \
                     `-{ARG_CHECK}`.\n\
                     Examples:\n\
                     `!{ALIAS_NAME} modest -{ARG_CHECK} performance`\n\
