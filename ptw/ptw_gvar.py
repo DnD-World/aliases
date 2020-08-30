@@ -39,7 +39,7 @@ FIELD_WAGE = "wage"
 FIELD_CHECK = "check"
 FIELD_BONUS = "bonus"
 
-HELP_TEXT = f'''
+HELP_TEXT = f'''\
 -title "PTW Help" -desc "Let\'s get this bread!
 
 TO USE:
@@ -50,18 +50,18 @@ __Syntax:__
 
 -f "Initial Setup|The first time you run this command, you should provide, at minimum, a `new_employer_name` and a `new_check_name`.
 __Examples:__
-`!{ALIAS_NAME} modest -{ARG_EMPLOYER} \"The Drunken Yeti\" -{ARG_CHECK} performance`
-`!{ALIAS_NAME} poor -{ARG_EMPLOYER} \"Messenger Service\" -{ARG_CHECK} acrobatics`
+`!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`
+`!{ALIAS_NAME} poor -{ARG_EMPLOYER} \\"Messenger Service\\" -{ARG_CHECK} acrobatics`
 
 If your job calls for a tool check, your check name should be the stat associated with the tool.
 Proficiency and expertise bonuses will not be automatically added, in this case;
 to add them, provide a `new_bonus_value`.
 
 __Examples:__
-`!{ALIAS_NAME} wealthy -{ARG_EMPLOYER} \"The Drunken Yeti\" -{ARG_CHECK} charisma -{ARG_BONUS} 2`"
+`!{ALIAS_NAME} wealthy -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} charisma -{ARG_BONUS} 2`"
 
 -f "Next Time|You can now just run `!{ALIAS_NAME} <lifestyle>`. 
-Don't pass an `employer_name` this time, or else your wages and job will get reset.
+Don\'t pass an `employer_name` this time, or else your wages and job will get reset.
 You can still change `check_name` and modify `bonus_value` with no problems.
 If you have advantage on the check, you can specify this by appending `adv` to the command.
 
@@ -139,7 +139,7 @@ if last_attended_sec:
         previous_wage = job_details[FIELD_WAGE]
         job_details[FIELD_WAGE] -= pay_cuts
 
-        desc_builder.append(f'Because of nonattendance, your wages have dropped from {previous_wage} to {job_details[FIELD_WAGE]}."')
+        desc_builder.append(f'Because of nonattendance, your wages have dropped from {previous_wage} to {job_details[FIELD_WAGE]}.')
 else:
     out.append(f'-f "Last Attended|This is your first day on the job!"')
 
@@ -157,7 +157,19 @@ if new_check:
         job_details[FIELD_CHECK] = check
         job_modifications.append(f'Skill check set to {new_check}')
     else:
-        errors.append(f'-f "Error: Invalid Check|`{new_check}` is not a valid value for `-{ARG_CHECK}`.\nTry again with the name of a skill or ability.\n\nExamples:\n`!{ALIAS_NAME} modest -{ARG_CHECK} performance`\n(sets your check to performance; will automatically include proficiency/expertise)\n\n`!{ALIAS_NAME} modest -{ARG_CHECK} wisdom -{ARG_BONUS} 2`\n(Use this version if you are working with a tool check. Sets your check to Wisdom, with a flat additional bonus of 2; you would use this to represent, for example, a +2 proficiency bonus.)"')
+        errors.append(f'''\
+-f "Error: Invalid Check|`{new_check}` is not a valid value for `-{ARG_CHECK}`.
+Try again with the name of a skill or ability.
+
+Examples:
+`!{ALIAS_NAME} modest -{ARG_CHECK} performance`
+(sets check to performance; will automatically include proficiency/expertise)
+
+`!{ALIAS_NAME} modest -{ARG_CHECK} wisdom -{ARG_BONUS} 2`
+(Use this if you are working with a tool check. Sets check to Wisdom, \
+with a flat additional bonus of 2; you would use this to represent, \
+for example, a +2 proficiency bonus.)"\
+''')
 
 new_bonus = parsed_args.last(ARG_BONUS)
 
@@ -193,12 +205,18 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
         current_successes = get_cc(CC_SUCCESSES)
         if current_successes == SUCCESSES_FOR_RAISE and job_details[FIELD_WAGE] < MAXIMUM_WAGE:
             job_details[FIELD_WAGE] += 1
-            desc_builder.append(f'You succeeded {current_successes} times this week, and have received a raise of 1GP!')
+            desc_builder.append(f'''\
+You succeeded {current_successes} times this week, \
+and have received a raise of 1GP!\
+''')
             job_modifications.append(f'Wage increased to {job_details[FIELD_WAGE]}GP')
 
         if current_successes == SUCCESSES_FOR_BONUS:
             earnings += BONUS_REWARD
-            desc_builder.append(f'You succeeded {current_successes} times this week, and have earned a bonus of {BONUS_REWARD}GP!')
+            desc_builder.append(f'''\
+You succeeded {current_successes} times this week, \
+and earned a bonus of {BONUS_REWARD}GP!\
+''')
     else:
         mod_cc(CC_FAILURES, 1)
         desc_builder.append("You **failed** the check!")
@@ -206,8 +224,12 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
         current_failures = get_cc(CC_FAILURES)
         if current_failures == FAILURES_FOR_PAY_CUT:
             job_details[FIELD_WAGE] -= 1
-            desc_builder.append(f'You failed {current_failures} times this week, and have received a pay cut of 1GP.')
             job_modifications.append(f'Wage decreased to {job_details[FIELD_WAGE]}GP')
+
+            desc_builder.append(f'''\
+You failed {current_failures} times this week, \
+and have received a pay cut of 1GP.\
+''')
 
     desc_builder.append("")
     desc_builder.append(f'You earned a total of **{earnings}GP!**')
@@ -216,11 +238,28 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
     # TODO: Automated Payment
 
 elif not check_name:
-    errors.append(f'-f "Error: No Check|You must set your skill check using `-{ARG_CHECK}`.\nExamples:\n`!{ALIAS_NAME} modest -{ARG_CHECK} performance`\n(Sets your check to performance; will automatically include proficiency/expertise)\n\n`!{ALIAS_NAME} modest -{ARG_CHECK} wisdom -{ARG_BONUS} 2`\n(Use this version if you are working with a tool check. Sets your check to Wisdom, with a flat additional bonus of 2; you would use this to represent, for example, a +2 proficiency bonus.)"')
+    errors.append(f'''\
+-f "Error: No Check|You must set your skill check using `-{ARG_CHECK}`.
+Examples:
+`!{ALIAS_NAME} modest -{ARG_CHECK} performance`
+(Sets check to performance; will automatically include proficiency/expertise)
+
+`!{ALIAS_NAME} modest -{ARG_CHECK} wisdom -{ARG_BONUS} 2`
+(Use this if you are working with a tool check. Sets check to Wisdom, \
+with a flat additional bonus of 2; you would use this to represent, \
+for example, a +2 proficiency bonus.)"\
+''')
 
 # Check if they've been fired
 if job_details[FIELD_WAGE] and int(job_details[FIELD_WAGE]) <= 0:
-    out.append(f'-f "Fired!|Because your wage has dropped to zero, you have been **fired.** If you got a new job, you will need to rerun this command, and specify your new employer with the `{ARG_EMPLOYER}` argument.\n\nExample: `!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`"')
+    out.append(f'''\
+-f "Fired!|Because your wage has dropped to zero, you have been **fired.**
+If you got a new job, you will need to rerun this command \
+and specify your new employer with the `{ARG_EMPLOYER}` argument.
+
+Example:
+`!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`"\
+''')
 
 out.append(f'-desc "{NEWLINE_DELIM.join(desc_builder)}"')
 
