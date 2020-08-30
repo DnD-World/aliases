@@ -72,32 +72,6 @@ FIELD_WAGE = "wage"
 FIELD_CHECK = "check"
 FIELD_BONUS = "bonus"
 
-SKILL_NAMES = [
-    "charisma",
-    "wisdom",
-    "strength",
-    "dexterity",
-    "intelligence",
-    "athletics",
-    "acrobatics",
-    "sleightOfHand",
-    "stealth",
-    "arcana",
-    "history",
-    "investigation",
-    "nature",
-    "religion",
-    "animalHandling",
-    "insight",
-    "medicine",
-    "perception",
-    "survival",
-    "deception",
-    "intimidation",
-    "performance",
-    "persuasion"
-]
-
 args = &&&
 parsed_args = argparse(args)
 
@@ -176,7 +150,7 @@ job_details[FIELD_LAST_ATTENDED] = current_time_sec
 new_check = parsed_args.last(ARG_CHECK)
 
 if new_check:
-    matches = [x for x in SKILL_NAMES if new_check.lower() in x.lower()]
+    matches = [x for x in get_raw().skills.keys() if new_check.lower() in x.lower()]
     check = matches[0] if matches else None
 
     if check:
