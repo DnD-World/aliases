@@ -75,7 +75,7 @@ FIELD_BONUS = "bonus"
 args = &&&
 parsed_args = argparse(args)
 
-if len(args) == 0 or args[0] in ["?", "help"]:
+if not args or args[0] in ["?", "help"]:
     return HELP_TEXT
 
 out = [
@@ -169,11 +169,9 @@ check_name = job_details.get(FIELD_CHECK)
 if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_WAGE] > 0:
 
     # TODO: turn adv into a setting, so it doesn't need to be passed every time.
-    # adv_dice can technically be 2 if ea is passed, but...
-    # Uhh. People shouldn't be doing that?
     adv_dice = parsed_args.adv()
     desc_builder.append(f'**Base Wage:** {job_details[FIELD_WAGE]}GP')
-    desc_builder.append(f'**Checking:** {check_name}{" + " + str(job_details[FIELD_BONUS]) if job_details[FIELD_BONUS] else ""}{" with advantage" if adv_dice > 0 else ""}')
+    desc_builder.append(f'**Checking:** {check_name}{" with advantage" if adv_dice > 0 else ""}')
 
     check_bonus = get_raw().skills.get(check_name)
     if job_details[FIELD_BONUS]:
@@ -196,7 +194,7 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
         desc_builder.append("You **passed** the check!")
 
         current_successes = get_cc(CC_SUCCESSES)
-        if current_successes == SUCCESSES_FOR_RAISE and int(job_details[FIELD_WAGE]) < MAXIMUM_WAGE:
+        if current_successes == SUCCESSES_FOR_RAISE and job_details[FIELD_WAGE] < MAXIMUM_WAGE:
             job_details[FIELD_WAGE] += 1
             desc_builder.append(f'You succeeded {current_successes} times this week, and have received a raise of 1GP!')
             job_modifications.append(f'Wage increased to {job_details[FIELD_WAGE]}GP')
