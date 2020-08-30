@@ -121,9 +121,7 @@ employer = job_details.get(FIELD_EMPLOYER)
 if employer:
     desc_builder.append(f'**Employer:** {employer.title()}')
 else:
-    errors.append(f'-f "Error: No Employer|You must set your employer using \
-                    `-{ARG_EMPLOYER}`.\n\
-                    Example: `!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\"`"')
+    errors.append(f'-f "Error: No Employer|You must set your employer using `-{ARG_EMPLOYER}`.\nExample: `!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\"`"')
 
 # Check attendance, deliver pay cuts
 last_attended_sec = job_details[FIELD_LAST_ATTENDED]
