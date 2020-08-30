@@ -216,7 +216,7 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
 
     desc_builder.append("")
     desc_builder.append(f'You earned a total of **{earnings}GP!**')
-    out.append(f'-f "Downtime Days (-1)|{get_cc(CC_DTDS)}"')
+    out.append(f'-f "Downtime Days (-1)|{cc_str(CC_DTDS)}"')
 
     # TODO: Automated Payment
 
