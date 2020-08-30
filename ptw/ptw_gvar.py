@@ -3,7 +3,40 @@
 ALIAS_NAME = "ptw"
 ALIAS_VERSION = "0.01"
 NEWLINE_DELIM = "\n"
-HELP_TEXT = get_gvar("ffc3136c-8986-4a8d-a756-48b5fbf668cb")
+HELP_TEXT = '''
+-title "PTW Help" -desc "Let\'s get this bread!
+
+TO USE:
+First, make sure your custom counters have been set up! If you haven\'t already done so, execute `!RC`.
+
+__Syntax:__
+`!ptw <lifestyle> [-e <new_employer_name> -c <new_check_name> -b <new_bonus_value>] <adv>`"
+
+-f "Initial Setup|The first time you run this command, you should provide, at minimum, a `new_employer_name` and a `new_check_name`.
+__Examples:__
+`!ptw modest -e \"The Drunken Yeti\" -c performance`
+`!ptw poor -e \"Messenger Service\" -c acrobatics`
+
+If your job calls for a tool check, your check name should be the stat associated with the tool.
+Proficiency and expertise bonuses will not be automatically added, in this case;
+to add them, provide a `new_bonus_value`.
+
+__Examples:__
+`!ptw wealthy -e \"The Drunken Yeti\" -c charisma -b 2`"
+
+-f "Next Time|You can now just run `!ptw <lifestyle>`. 
+Don't pass an `employer_name` this time, or else your wages and job will get reset.
+You can still change `check_name` and modify `bonus_value` with no problems.
+If you have advantage on the check, you can specify this by appending `adv` to the command.
+
+__Examples:__
+`!ptw modest`
+`!ptw modest adv`
+`!ptw modest -c athletics adv`"
+
+-f "help|`!ptw ?` or `!ptw help`
+Displays this help message!"
+'''
 
 # Tuning Constants
 CHECK_DC = 15
