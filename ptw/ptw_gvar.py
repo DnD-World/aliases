@@ -115,6 +115,8 @@ new_employer = parsed_args.last(ARG_EMPLOYER)
 if new_employer:
     job_details[FIELD_EMPLOYER] = new_employer
     job_details[FIELD_WAGE] = STARTING_WAGE
+    job_details[FIELD_BONUS] = None
+    job_details[FIELD_LAST_ATTENDED] = None
     job_modifications.append(f'Employer set to {new_employer}')
 
 employer = job_details.get(FIELD_EMPLOYER)
