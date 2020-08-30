@@ -174,10 +174,7 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
     desc_builder.append(f'**Checking:** {check_name}{" with advantage" if adv_dice > 0 else ""}')
 
     check_bonus = get_raw().skills.get(check_name)
-    if job_details[FIELD_BONUS]:
-        manual_bonus = f' + {job_details[FIELD_BONUS]}'
-    else:
-        manual_bonus = ""
+    manual_bonus = f' + {job_details[FIELD_BONUS]}' if job_details[FIELD_BONUS] else ""
 
     dice_expr = f'{"2d20kh1" if adv_dice > 0 else "d20"} + {get_raw().skills.get(check_name)}{manual_bonus}'
 
@@ -189,7 +186,7 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
 
     earnings = job_details[FIELD_WAGE]
 
-    if(result.total >= CHECK_DC):
+    if result.total >= CHECK_DC:
         mod_cc(CC_SUCCESSES, 1)
         desc_builder.append("You **passed** the check!")
 
