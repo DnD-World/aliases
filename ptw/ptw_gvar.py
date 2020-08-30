@@ -251,7 +251,7 @@ for example, a +2 proficiency bonus.)"\
 ''')
 
 # Check if they've been fired
-if job_details[FIELD_WAGE] and int(job_details[FIELD_WAGE]) <= 0:
+if job_details[FIELD_WAGE] and job_details[FIELD_WAGE] <= 0:
     desc_builder.clear()
     out.append(f'''\
 -f "Fired!|Because your wage has dropped to zero, you have been **fired.**
