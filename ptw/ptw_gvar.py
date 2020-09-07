@@ -56,7 +56,7 @@ Second, perform initial setup using the `new` subcommand.
 Finally, just run `!{ALIAS_NAME}`.
 
 __Usage:__
-If your PTW is already configured, just execute `!ptw`
+If your PTW is already configured, just execute !ptw ; your pay will automatically be added to your coin pouch.
 
 Otherwise, use `!{ALIAS_NAME} new` to configure your work details;
 or `!{ALIAS_NAME} settings` to go back and make changes.
