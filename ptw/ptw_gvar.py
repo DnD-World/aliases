@@ -72,7 +72,7 @@ __Examples:__
 
 If your job calls for a tool check, your check name should be the stat associated with the tool.
 Proficiency and expertise bonuses will not be automatically added, in this case;
-to add them, provide a `new_bonuses_value`. You can chain multiple bonuses, and optionally annotate them.
+to add them, use `-{ARG_BONUS}`. You can chain multiple bonuses, and optionally annotate them.
 
 __Examples:__
 `!{ALIAS_NAME} new \\"The Drunken Yeti\\" charisma -{ARG_BONUS} 2[proficiency]`
@@ -325,7 +325,7 @@ and have received a pay cut of 1GP.\
 ''')
 
         desc_builder.append("")
-        desc_builder.append(f'You earned a total of **{earnings}GP!**')
+        desc_builder.append(f'**{earnings}GP** was added to your coin pouch!')
         out.append(f'-f "Downtime Days (-1)|{cc_str(CC_DTDS)}"')
 
         # region Automated Payment; taken from gvar 6b81db5d-a6ee-4a4d-b922-1557eb5f5ee4
