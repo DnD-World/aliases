@@ -255,7 +255,22 @@ and have received a pay cut of 1GP.\
     desc_builder.append(f'You earned a total of **{earnings}GP!**')
     out.append(f'-f "Downtime Days (-1)|{cc_str(CC_DTDS)}"')
 
-    # TODO: Automated Payment
+    # Automated Payment; taken from gvar 6b81db5d-a6ee-4a4d-b922-1557eb5f5ee4
+    bagsLoaded = load_json(get("bags", '[[""]]'))
+    pouch=([x for x in bagsLoaded if x[0]=="Coin Pouch"]+[[]])[0]
+
+    if pouch == []:
+        return f"""-f "Error|Coin pouch missing, please run `!coins`" """
+
+    # TODO: This can be expanded to take an object containing a delta
+    # for each cointype, if necessary. But for now, quick and easy~
+    operations = [("gp", earnings)]
+
+    for coinType, amount in operations:
+        amount = amount
+        pouch[1].update({coinType:pouch[1]["gp"]+amount})
+
+    set_cvar("bags",dump_json(bagsLoaded))
 
 elif not check_name:
     errors.append(f'''\
