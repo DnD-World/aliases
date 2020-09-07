@@ -4,7 +4,6 @@ ALIAS_NAME = "ptw"
 ALIAS_VERSION = "0.01"
 NEWLINE_DELIM = "\n"
 
-
 # Tuning Constants
 CHECK_DC = 15
 DAYS_PER_PAY_CUT = 8
@@ -14,6 +13,7 @@ SUCCESSES_FOR_RAISE = 3
 FAILURES_FOR_PAY_CUT = 3
 SUCCESSES_FOR_BONUS = 5
 BONUS_REWARD = 5
+LIFESTYLES = load_json(get_gvar("e32a5f14-8707-4dbd-ac69-479afd70c1c1"))
 
 # Args
 ARG_EMPLOYER = "e"
@@ -22,6 +22,11 @@ ARG_BONUS = "b"
 
 # Cvars
 CVAR_PTW = "ptw_details"
+CVAR_LIFESTYLE = "lifestyle"
+
+# Lifestyle Cvar Properties
+LS_LAST_LIFESTYLE = "last_lifestyle"
+LS_WORK_MODIFIER = "work_modifier"
 
 # CC Names
 # Ideally, the success/fail CCs should be renamed so it's clear
@@ -46,29 +51,29 @@ TO USE:
 First, make sure your custom counters have been set up! If you haven\'t already done so, execute `!RC`.
 
 __Syntax:__
-`!{ALIAS_NAME} <lifestyle> [-{ARG_EMPLOYER} <new_employer_name> -{ARG_CHECK} <new_check_name> -{ARG_BONUS} <new_bonus_value>] <adv>`"
+`!{ALIAS_NAME} [-{ARG_EMPLOYER} <new_employer_name> -{ARG_CHECK} <new_check_name> -{ARG_BONUS} <check_bonus>] <adv>`"
 
 -f "Initial Setup|The first time you run this command, you should provide, at minimum, a `new_employer_name` and a `new_check_name`.
 __Examples:__
-`!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`
-`!{ALIAS_NAME} poor -{ARG_EMPLOYER} \\"Messenger Service\\" -{ARG_CHECK} acrobatics`
+`!{ALIAS_NAME} -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`
+`!{ALIAS_NAME} -{ARG_EMPLOYER} \\"Messenger Service\\" -{ARG_CHECK} acrobatics`
 
 If your job calls for a tool check, your check name should be the stat associated with the tool.
 Proficiency and expertise bonuses will not be automatically added, in this case;
-to add them, provide a `new_bonus_value`.
+to add them, provide a `new_bonuses_value`.
 
 __Examples:__
-`!{ALIAS_NAME} wealthy -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} charisma -{ARG_BONUS} 2`"
+`!{ALIAS_NAME} -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} charisma -{ARG_BONUS} 2[proficiency]`"
 
--f "Next Time|You can now just run `!{ALIAS_NAME} <lifestyle>`. 
+-f "Next Time|Just run `!{ALIAS_NAME}`. 
 Don\'t pass an `employer_name` this time, or else your wages and job will get reset.
 You can still change `check_name` and modify `bonus_value` with no problems.
 If you have advantage on the check, you can specify this by appending `adv` to the command.
 
 __Examples:__
-`!{ALIAS_NAME} modest`
-`!{ALIAS_NAME} modest adv`
-`!{ALIAS_NAME} modest -{ARG_CHECK} athletics adv`"
+`!{ALIAS_NAME}`
+`!{ALIAS_NAME} adv`
+`!{ALIAS_NAME} -{ARG_CHECK} athletics adv`"
 
 -f "help|`!{ALIAS_NAME} ?` or `!{ALIAS_NAME} help`
 Displays this help message!"
@@ -77,7 +82,7 @@ Displays this help message!"
 args = &&&
 parsed_args = argparse(args)
 
-if not args or args[0] in ["?", "help"]:
+if args and args[0] in ["?", "help"]:
     return HELP_TEXT
 
 out = [
@@ -100,12 +105,20 @@ else:
         FIELD_CHECK,
         FIELD_BONUS]}
 
-# Lifestyle
-# TODO: Fetch lifestyle from cvar
-if args[0]:
-    desc_builder.append(f'**Lifestyle:** {args[0].title()}')
-else:
-    errors.append(f'-f "Error: No Lifestyle Provided|The first argument to this command needs to be your lifestyle.\nExample: `!{ALIAS_NAME} modest`"')
+# Abort if no lifestyle
+if not exists(CVAR_LIFESTYLE):
+    # TODO: When details are solidified, update this help text.
+    return f'''\
+-title "{name} needs a lifestyle!" \
+-desc "You need to run `!lifestyle` before you can perform part-time work.
+See <channel_name> blahblahblah
+
+Example: `!lifestyle some sample command`"\
+'''
+
+last_lifestyle_name = load_json(lifestyle)[LS_LAST_LIFESTYLE]
+desc_builder.append(f'**Lifestyle:** {last_lifestyle_name.title()}')
+lifestyle_details = LIFESTYLES[last_lifestyle_name]
 
 if get_cc(CC_DTDS) == 0:
     errors.append(f'-f "Error: No DTDs|You have no downtime days left!"')
@@ -123,7 +136,7 @@ employer = job_details.get(FIELD_EMPLOYER)
 if employer:
     desc_builder.append(f'**Employer:** {employer.title()}')
 else:
-    errors.append(f'-f "Error: No Employer|You must set your employer using `-{ARG_EMPLOYER}`.\nExample: `!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\"`"')
+    errors.append(f'-f "Error: No Employer|You must set your employer using `-{ARG_EMPLOYER}`.\nExample: `!{ALIAS_NAME} -{ARG_EMPLOYER} \\"The Drunken Yeti\\"`"')
 
 # Check attendance, deliver pay cuts
 last_attended_sec = job_details[FIELD_LAST_ATTENDED]
@@ -164,20 +177,20 @@ if new_check:
 Try again with the name of a skill or ability.
 
 Examples:
-`!{ALIAS_NAME} modest -{ARG_CHECK} performance`
+`!{ALIAS_NAME} -{ARG_CHECK} performance`
 (sets check to performance; will automatically include proficiency/expertise)
 
-`!{ALIAS_NAME} modest -{ARG_CHECK} wisdom -{ARG_BONUS} 2`
+`!{ALIAS_NAME} -{ARG_CHECK} wisdom -{ARG_BONUS} 2`
 (Use this if you are working with a tool check. Sets check to Wisdom, \
 with a flat additional bonus of 2; you would use this to represent, \
 for example, a +2 proficiency bonus.)"\
 ''')
 
-new_bonus = parsed_args.last(ARG_BONUS)
+new_bonuses = parsed_args.get(ARG_BONUS)
 
-if new_bonus:
-    job_details[FIELD_BONUS] = int(new_bonus)
-    job_modifications.append(f'Check bonus set to {new_bonus}')
+if new_bonuses:
+    job_details[FIELD_BONUS] = [str(bonus) for bonus in new_bonuses]
+    job_modifications += [f'Check bonus added: {bonus}' for bonus in job_details[FIELD_BONUS]]
 
 check_name = job_details.get(FIELD_CHECK)
 if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_WAGE] > 0:
@@ -187,10 +200,15 @@ if check_name and not errors and job_details[FIELD_WAGE] and job_details[FIELD_W
     desc_builder.append(f'**Base Wage:** {job_details[FIELD_WAGE]}GP')
     desc_builder.append(f'**Checking:** {check_name}{" with advantage" if adv_dice > 0 else ""}')
 
-    check_bonus = get_raw().skills.get(check_name)
-    manual_bonus = f' + {job_details[FIELD_BONUS]}' if job_details[FIELD_BONUS] else ""
+    bonuses = [get_raw().skills.get(check_name)]
+    if job_details[FIELD_BONUS]:
+        bonuses += job_details[FIELD_BONUS]
 
-    dice_expr = f'{"2d20kh1" if adv_dice > 0 else "d20"} + {get_raw().skills.get(check_name)}{manual_bonus}'
+    bonuses.append(f'{str(lifestyle_details[LS_WORK_MODIFIER])}[lifestyle]')
+
+    bonus_suffix = " + ".join([str(bonus) for bonus in bonuses])
+
+    dice_expr = f'{"2d20kh1" if adv_dice > 0 else "d20"} + {bonus_suffix}'
 
     result = vroll(dice_expr)
     desc_builder.append(f'**Result:** {result}')
@@ -243,10 +261,10 @@ elif not check_name:
     errors.append(f'''\
 -f "Error: No Check|You must set your skill check using `-{ARG_CHECK}`.
 Examples:
-`!{ALIAS_NAME} modest -{ARG_CHECK} performance`
+`!{ALIAS_NAME} -{ARG_CHECK} performance`
 (Sets check to performance; will automatically include proficiency/expertise)
 
-`!{ALIAS_NAME} modest -{ARG_CHECK} wisdom -{ARG_BONUS} 2`
+`!{ALIAS_NAME} -{ARG_CHECK} wisdom -{ARG_BONUS} 2`
 (Use this if you are working with a tool check. Sets check to Wisdom, \
 with a flat additional bonus of 2; you would use this to represent, \
 for example, a +2 proficiency bonus.)"\
@@ -261,9 +279,10 @@ If you got a new job, you will need to rerun this command \
 and specify your new employer with the `-{ARG_EMPLOYER}` argument.
 
 Example:
-`!{ALIAS_NAME} modest -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`"\
+`!{ALIAS_NAME} -{ARG_EMPLOYER} \\"The Drunken Yeti\\" -{ARG_CHECK} performance`"\
 ''')
 
+# Combine output
 out.append(f'-desc "{NEWLINE_DELIM.join(desc_builder)}"')
 
 if job_modifications:
