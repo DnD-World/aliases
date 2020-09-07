@@ -3,6 +3,10 @@
 ALIAS_NAME = "ptw"
 ALIAS_VERSION = "0.01"
 NEWLINE_DELIM = "\n"
+COIN_META = load_json(get_gvar("4fbb9498-05b5-4fab-a1e7-8166bf19e53c"))
+
+# Coins Meta-info Properties
+COIN_POUCH_NAME = "coin_pouch_name"
 
 # Tuning Constants
 CHECK_DC = 15
@@ -87,8 +91,9 @@ if args and args[0] in ["?", "help"]:
 
 out = [
     f'-title "{name} does part-time work!"',
-    f'-thumb {image}'
-    f'-color {color}'
+    f'-thumb {image}',
+    f'-color {color}',
+    f'-footer "!{ALIAS_NAME} ?"'
 ]
 
 desc_builder = []
@@ -257,7 +262,7 @@ and have received a pay cut of 1GP.\
 
     # Automated Payment; taken from gvar 6b81db5d-a6ee-4a4d-b922-1557eb5f5ee4
     bagsLoaded = load_json(get("bags", '[[""]]'))
-    pouch=([x for x in bagsLoaded if x[0]=="Coin Pouch"]+[[]])[0]
+    pouch=([x for x in bagsLoaded if x[0]==COIN_META[COIN_POUCH_NAME]]+[[]])[0]
 
     if pouch == []:
         return f"""-f "Error|Coin pouch missing, please run `!coins`" """
@@ -305,6 +310,7 @@ if job_modifications:
 
 if errors:
     errors.append('-desc "There were some problems with the command; no changes have been made."')
+    errors.append(f'-footer "!{ALIAS_NAME} ?"')
     return " ".join(errors)
 else:
     set_cvar(CVAR_PTW, dump_json(job_details))

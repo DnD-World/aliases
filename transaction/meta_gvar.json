@@ -1,0 +1,10 @@
+{
+    "coin_pouch_name": "Coin Pouch",
+    "coin_rates": {
+        "cp": 100,
+        "sp": 10,
+        "ep": 2,
+        "gp": 1,
+        "pp": 0.1
+    }
+}
