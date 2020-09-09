@@ -209,9 +209,13 @@ Example: `!{ALIAS_NAME} new \\"The Drunken Yeti\\" performance`"\
             job_details[FIELD_BONUS] = [str(bonus) for bonus in new_bonuses]
             job_modifications += [f'Check bonus added: {bonus}' for bonus in job_details[FIELD_BONUS]]
 
+        prev_advantage_dice = job_details[FIELD_ADV]
+
         job_details[FIELD_ADV] = parsed_args.adv()
         if job_details[FIELD_ADV] > 0:
             job_modifications.append("Check bonus added: Advantage")
+        elif prev_advantage_dice > job_details[FIELD_ADV]:
+            job_modifications.append("Check bonus removed: Advantage")
         # endregion
 
 else:
